@@ -93,7 +93,7 @@ public class NullBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public boolean skipRendering(BlockState state, BlockState adjacentState, net.minecraft.core.Direction direction) {
+    protected boolean skipRendering(BlockState state, BlockState adjacentState, net.minecraft.core.Direction direction) {
         return false;
     }
 
@@ -106,7 +106,7 @@ public class NullBlock extends Block implements EntityBlock {
         ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof NullBlockEntity nullBe && nullBe.hasDisguise()) {
-            stack.set(ModDataComponents.DISGUISE_BLOCK.get(), nullBe.getDisguiseState().getBlock());
+            stack.set(ModDataComponents.DISGUISE_BLOCK, nullBe.getDisguiseState().getBlock());
         }
         return stack;
     }
