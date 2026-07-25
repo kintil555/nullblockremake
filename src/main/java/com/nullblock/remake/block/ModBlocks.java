@@ -31,18 +31,7 @@ public class ModBlocks {
                 .isRedstoneConductor((state, level, pos) -> false)
                 .isSuffocating((state, level, pos) -> false)
                 .isViewBlocking((state, level, pos) -> false)
+                .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
                 .setId(key));
         return Registry.register(BuiltInRegistries.BLOCK, key, block);
     }
-
-    private static Item registerItem(String name) {
-        ResourceKey<Item> key = ResourceKey.create(Registries.ITEM,
-                ResourceLocation.fromNamespaceAndPath(NullBlockRemakeMod.MODID, name));
-        Item item = new NullBlockItem(NULL_BLOCK, new Item.Properties().setId(key));
-        return Registry.register(BuiltInRegistries.ITEM, key, item);
-    }
-
-    public static void init() {
-        // Triggers static initializers above to run registration.
-    }
-}

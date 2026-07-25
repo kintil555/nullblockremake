@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -76,10 +75,8 @@ public class NullBlock extends Block implements EntityBlock {
         return true;
     }
 
-    @Override
-    public PushReaction getPistonPushReaction(BlockState state) {
-        return PushReaction.DESTROY;
-    }
+    // Piston push reaction is set via BlockBehaviour.Properties#pushReaction(...)
+    // in ModBlocks (getPistonPushReaction override no longer exists in vanilla).
 
     // ------------------------------------------------------------------
     // Rendering: delegate to the BlockEntityRenderer using disguise state.
