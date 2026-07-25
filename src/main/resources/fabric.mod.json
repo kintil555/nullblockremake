@@ -8,6 +8,9 @@
   "entrypoints": {
     "main": [
       "com.nullblock.remake.NullBlockRemakeMod"
+    ],
+    "client": [
+      "com.nullblock.remake.client.NullBlockRemakeModClient"
     ]
   },
   "depends": {
