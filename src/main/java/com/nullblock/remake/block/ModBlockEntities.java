@@ -7,14 +7,12 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
-import java.util.Set;
-
 public class ModBlockEntities {
 
     public static final BlockEntityType<NullBlockEntity> NULL_BLOCK_ENTITY = Registry.register(
             BuiltInRegistries.BLOCK_ENTITY_TYPE,
             ResourceLocation.fromNamespaceAndPath(NullBlockRemakeMod.MODID, "null_block_entity"),
-            new BlockEntityType<>(NullBlockEntity::new, Set.of(ModBlocks.NULL_BLOCK))
+            BlockEntityType.Builder.of(NullBlockEntity::new, ModBlocks.NULL_BLOCK).build(null)
     );
 
     public static void init() {
