@@ -26,7 +26,8 @@ import org.jetbrains.annotations.Nullable;
  * PLAYER_NEARBY_TICK) actually work. The original mod defined
  * NullBlockTracker but never called track()/untrack() from anywhere, so the
  * tracker was permanently empty and those triggers never fired. This class
- * now tracks itself on load and untracks itself on removal/unload.
+ * now tracks itself on load and untracks itself on removal (setRemoved() is
+ * called by vanilla both on block removal and on chunk unload).
  *
  * Other mods can read/write disguise state via
  * {@link com.nullblock.remake.api.NullBlockAPI} instead of touching this
@@ -39,7 +40,7 @@ public class NullBlockEntity extends BlockEntity {
     private BlockState disguiseState;
 
     public NullBlockEntity(BlockPos pos, BlockState state) {
-        super(ModBlockEntities.NULL_BLOCK_ENTITY.get(), pos, state);
+        super(ModBlockEntities.NULL_BLOCK_ENTITY, pos, state);
     }
 
     @Nullable
@@ -72,12 +73,6 @@ public class NullBlockEntity extends BlockEntity {
     public void setLevel(Level level) {
         super.setLevel(level);
         trackIfServer();
-    }
-
-    @Override
-    public void onChunkUnloaded() {
-        super.onChunkUnloaded();
-        untrackIfServer();
     }
 
     @Override
