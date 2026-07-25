@@ -91,7 +91,10 @@ public class NullBlock extends Block implements EntityBlock {
 
     @Override
     protected boolean skipRendering(BlockState state, BlockState adjacentState, net.minecraft.core.Direction direction) {
-        return false;
+        // Cull faces between two adjacent NullBlocks to reduce overdraw in
+        // large NullBlock volumes; the disguise entity renderer draws each
+        // block independently so shared faces are redundant work.
+        return adjacentState.is(this);
     }
 
     // ------------------------------------------------------------------
