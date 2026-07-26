@@ -31,9 +31,15 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
         RenderType renderType = net.minecraft.client.renderer.ItemBlockRenderTypes.getChunkRenderType(disguise);
 
+        // Wrap the level so neighbor lookups resolve adjacent NullBlocks to
+        // their disguise state; this lets checkSides=true actually cull
+        // shared faces between two adjacent disguised NullBlocks instead of
+        // seeing the real (invisible) NullBlock and never occluding.
+        DisguiseAwareBlockGetter culledLevel = new DisguiseAwareBlockGetter(entity.getLevel());
+
         poseStack.pushPose();
         dispatcher.getModelRenderer().tesselateBlock(
-                entity.getLevel(),
+                culledLevel,
                 dispatcher.getBlockModel(disguise),
                 disguise,
                 entity.getBlockPos(),
