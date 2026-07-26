@@ -17,7 +17,7 @@ public abstract class FlowableFluidMixin {
     private void nullblock_remake$treatAsSolidFace(BlockGetter level, BlockPos neighborPos, Direction side,
                                                      CallbackInfoReturnable<Boolean> cir) {
         if (level.getBlockState(neighborPos).getBlock() instanceof NullBlock) {
-            cir.setReturnValue(true);
+            cir.setReturnValue(false);
         }
     }
 }
