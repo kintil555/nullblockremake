@@ -31,7 +31,7 @@ public class ModBlocks {
                 .isRedstoneConductor((state, level, pos) -> false)
                 .isSuffocating((state, level, pos) -> false)
                 .isViewBlocking((state, level, pos) -> false)
-                .pushReaction(net.minecraft.world.level.material.PushReaction.DESTROY)
+                .pushReaction(net.minecraft.world.level.material.PushReaction.BLOCK)
                 .setId(key));
         return Registry.register(BuiltInRegistries.BLOCK, key, block);
     }

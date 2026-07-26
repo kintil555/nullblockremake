@@ -1,5 +1,6 @@
 {
   "block.nullblock_remake.null_block": "Null Block",
+  "item.nullblock_remake.null_block": "Null Block",
   "item.nullblock_remake.null_block.filled": "Null Block dari %s",
   "itemGroup.nullblock_remake": "Null Block Remake"
 }
