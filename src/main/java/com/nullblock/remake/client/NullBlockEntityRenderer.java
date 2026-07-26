@@ -24,9 +24,11 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
     public void render(NullBlockEntity entity, float partialTick, PoseStack poseStack,
                         MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         BlockState disguise = entity.getDisguiseState();
+        boolean hasRealDisguise = disguise != null && !disguise.isAir();
+
         // No disguise yet: fall back to rendering the NullBlock's own model
         // (null_block texture) so the block is visible instead of invisible.
-        if (disguise == null || disguise.isAir()) {
+        if (!hasRealDisguise) {
             disguise = entity.getBlockState();
         }
 
@@ -39,6 +41,19 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
         // seeing the real (invisible) NullBlock and never occluding.
         DisguiseAwareBlockGetter culledLevel = new DisguiseAwareBlockGetter(entity.getLevel());
 
+        // checkSides face-culls each side of the model against
+        // Block.shouldRenderFace, which for the *placeholder* model
+        // (NullBlock's own cube_all) is evaluated against NullBlock's own
+        // occlusion shape — always empty by design (see NullBlock#getOcclusionShape),
+        // so the cube_all placeholder gets its faces culled inconsistently
+        // against itself instead of against real neighbors. The placeholder
+        // must always render as a full, intact cube, so it skips side
+        // culling entirely. Once a real disguise is assigned, checkSides
+        // stays true so the disguise behaves like the real block it mimics
+        // (culling shared faces against solid neighbors and other disguised
+        // NullBlocks via DisguiseAwareBlockGetter).
+        boolean checkSides = hasRealDisguise;
+
         poseStack.pushPose();
         dispatcher.getModelRenderer().tesselateBlock(
                 culledLevel,
@@ -47,7 +62,7 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
                 entity.getBlockPos(),
                 poseStack,
                 bufferSource.getBuffer(renderType),
-                true,
+                checkSides,
                 net.minecraft.util.RandomSource.create(),
                 disguise.getSeed(entity.getBlockPos()),
                 packedOverlay

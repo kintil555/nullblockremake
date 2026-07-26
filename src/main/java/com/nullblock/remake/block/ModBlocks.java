@@ -25,7 +25,6 @@ public class ModBlocks {
                 .mapColor(MapColor.NONE)
                 .noCollission()
                 .noOcclusion()
-                .air()
                 .strength(0.5f)
                 .sound(SoundType.GLASS)
                 .isValidSpawn((state, level, pos, entityType) -> false)
