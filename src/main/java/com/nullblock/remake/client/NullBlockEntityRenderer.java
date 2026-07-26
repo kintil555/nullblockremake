@@ -21,6 +21,23 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
     }
 
     @Override
+    public boolean shouldRenderOffScreen(NullBlockEntity entity) {
+        // NullBlock uses RenderShape.INVISIBLE so the vanilla chunk mesh
+        // never contributes any geometry for it. When a chunk section is
+        // otherwise empty of solid geometry around a NullBlock, vanilla's
+        // per-section frustum/occlusion visibility graph can decide that
+        // section currently has nothing worth drawing and skip calling this
+        // renderer for it entirely from certain camera angles — this is the
+        // "faces don't render until I turn the camera toward that side"
+        // symptom. Returning true here tells LevelRenderer to always invoke
+        // this renderer for every loaded NullBlockEntity regardless of the
+        // section's own occlusion/frustum state, matching the pattern used
+        // by other mods whose BlockEntityRenderer draws content that the
+        // normal chunk-mesh visibility graph has no way to account for.
+        return true;
+    }
+
+    @Override
     public void render(NullBlockEntity entity, float partialTick, PoseStack poseStack,
                         MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         BlockState disguise = entity.getDisguiseState();
@@ -55,6 +72,7 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
         boolean checkSides = hasRealDisguise;
 
         poseStack.pushPose();
+        com.mojang.blaze3d.systems.RenderSystem.disableCull();
         dispatcher.getModelRenderer().tesselateBlock(
                 culledLevel,
                 dispatcher.getBlockModel(disguise),
@@ -67,6 +85,7 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
                 disguise.getSeed(entity.getBlockPos()),
                 packedOverlay
         );
+        com.mojang.blaze3d.systems.RenderSystem.enableCull();
         poseStack.popPose();
     }
 }
