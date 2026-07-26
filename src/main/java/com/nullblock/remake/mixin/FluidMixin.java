@@ -11,11 +11,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(Fluid.class)
+@Mixin(FluidState.class)
 public abstract class FluidMixin {
 
     @Inject(method = "canBeReplacedWith", at = @At("HEAD"), cancellable = true)
-    private void nullblock_remake$preventReplace(FluidState state, BlockGetter level, BlockPos pos, Fluid newFluid,
+    private void nullblock_remake$preventReplace(BlockGetter level, BlockPos pos, Fluid newFluid,
                                                    Direction direction, CallbackInfoReturnable<Boolean> cir) {
         if (level.getBlockState(pos).getBlock() instanceof NullBlock) {
             cir.setReturnValue(false);
