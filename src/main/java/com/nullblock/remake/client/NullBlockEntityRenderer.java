@@ -39,7 +39,7 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
                 entity.getBlockPos(),
                 poseStack,
                 bufferSource.getBuffer(renderType),
-                false,
+                true,
                 net.minecraft.util.RandomSource.create(),
                 disguise.getSeed(entity.getBlockPos()),
                 packedOverlay
