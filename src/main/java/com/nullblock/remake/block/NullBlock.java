@@ -66,7 +66,7 @@ public class NullBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected VoxelShape getOcclusionShape(BlockState state, BlockGetter level, BlockPos pos) {
+    protected VoxelShape getOcclusionShape(BlockState state) {
         // Vanilla's fluid renderer (LiquidBlockRenderer) determines neighbor
         // "solidity" for corner-height averaging from isSolidRender(), which
         // in turn derives from the cached occlusion shape (not the collision
