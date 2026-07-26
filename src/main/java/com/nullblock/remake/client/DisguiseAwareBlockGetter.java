@@ -59,18 +59,13 @@ public class DisguiseAwareBlockGetter implements BlockAndTintGetter {
     }
 
     @Override
-    public int getMaxLightLevel() {
-        return delegate.getMaxLightLevel();
-    }
-
-    @Override
     public int getHeight() {
         return delegate.getHeight();
     }
 
     @Override
-    public int getMinBuildHeight() {
-        return delegate.getMinBuildHeight();
+    public int getMinY() {
+        return delegate.getMinY();
     }
 
     @Override
