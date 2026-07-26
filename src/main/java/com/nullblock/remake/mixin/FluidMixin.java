@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(Fluid.class)
 public abstract class FluidMixin {
 
-    @Inject(method = "canBeReplaceWith", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "canBeReplacedWith", at = @At("HEAD"), cancellable = true)
     private void nullblock_remake$preventReplace(FluidState state, BlockGetter level, BlockPos pos, Fluid newFluid,
                                                    Direction direction, CallbackInfoReturnable<Boolean> cir) {
         if (level.getBlockState(pos).getBlock() instanceof NullBlock) {
