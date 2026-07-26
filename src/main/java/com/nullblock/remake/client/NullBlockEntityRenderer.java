@@ -24,8 +24,10 @@ public class NullBlockEntityRenderer implements BlockEntityRenderer<NullBlockEnt
     public void render(NullBlockEntity entity, float partialTick, PoseStack poseStack,
                         MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
         BlockState disguise = entity.getDisguiseState();
+        // No disguise yet: fall back to rendering the NullBlock's own model
+        // (null_block texture) so the block is visible instead of invisible.
         if (disguise == null || disguise.isAir()) {
-            return;
+            disguise = entity.getBlockState();
         }
 
         BlockRenderDispatcher dispatcher = Minecraft.getInstance().getBlockRenderer();
