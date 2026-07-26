@@ -140,7 +140,17 @@ public class NullBlock extends Block implements EntityBlock {
             return InteractionResult.FAIL;
         }
 
-        BlockState disguise = blockItem.getBlock().defaultBlockState();
+        // Derive the disguise state the same way a real placement would,
+        // so blocks whose orientation depends on player position/facing
+        // (stairs, logs, furnaces, glazed terracotta, etc.) disguise with
+        // the correct rotation instead of always defaulting to their base
+        // BlockState. Blocks with no placement-dependent properties simply
+        // fall back to their default state, so this is safe for every block.
+        net.minecraft.world.item.context.BlockPlaceContext ctx =
+                new net.minecraft.world.item.context.BlockPlaceContext(
+                        new net.minecraft.world.item.context.UseOnContext(level, player, hand, stack, hitResult));
+        BlockState placementState = blockItem.getBlock().getStateForPlacement(ctx);
+        BlockState disguise = placementState != null ? placementState : blockItem.getBlock().defaultBlockState();
 
         if (!level.isClientSide) {
             nullBe.setDisguiseState(disguise);

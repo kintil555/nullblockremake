@@ -112,15 +112,22 @@ public class NullBlockEntity extends BlockEntity {
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         if (disguiseState != null) {
-            ResourceLocation id = BuiltInRegistries.BLOCK.getKey(disguiseState.getBlock());
-            tag.putString("DisguiseBlock", id.toString());
+            // Persist the full BlockState (all properties, e.g. facing/axis/half)
+            // so placement-aware rotation survives save/load, not just the block id.
+            tag.put("DisguiseState", net.minecraft.nbt.NbtUtils.writeBlockState(disguiseState));
         }
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        if (tag.contains("DisguiseBlock")) {
+        if (tag.contains("DisguiseState")) {
+            disguiseState = net.minecraft.nbt.NbtUtils.readBlockState(
+                    registries.lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK),
+                    tag.getCompound("DisguiseState"));
+        } else if (tag.contains("DisguiseBlock")) {
+            // Legacy format (pre-rotation support): only stored the block id,
+            // so old saves fall back to the block's default state.
             ResourceLocation id = ResourceLocation.parse(tag.getString("DisguiseBlock"));
             BuiltInRegistries.BLOCK.getOptional(id).ifPresentOrElse(
                     block -> disguiseState = block.defaultBlockState(),
