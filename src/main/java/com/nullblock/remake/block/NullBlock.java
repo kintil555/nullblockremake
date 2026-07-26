@@ -75,6 +75,25 @@ public class NullBlock extends Block implements EntityBlock {
         return true;
     }
 
+    // ------------------------------------------------------------------
+    // Fluid immunity: noCollission() (required for passability) makes
+    // blocksMotion() false, which vanilla's FlowingFluid.spreadTo() treats
+    // as "washable" for non-air blocks unless canBeReplaced() says
+    // otherwise. Without this override, water/lava spreading into a
+    // NullBlock destroys it and drops it as an item. NullBlock must never
+    // be treated as replaceable by fluids or placement.
+    // ------------------------------------------------------------------
+
+    @Override
+    protected boolean canBeReplaced(BlockState state, net.minecraft.world.level.material.Fluid fluid) {
+        return false;
+    }
+
+    @Override
+    protected boolean canBeReplaced(BlockState state, net.minecraft.world.item.context.BlockPlaceContext context) {
+        return false;
+    }
+
     // Piston push reaction is set via BlockBehaviour.Properties#pushReaction(...)
     // in ModBlocks (getPistonPushReaction override no longer exists in vanilla).
 
