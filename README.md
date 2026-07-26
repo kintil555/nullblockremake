@@ -31,6 +31,21 @@ The original `nullblockmod` had several dead/broken subsystems that this rewrite
 - `BLOCK_INTERACTION` trigger type existed but was never fired anywhere
 - Radius-trigger "inside" state was tracked in an unbounded, never-cleared set
 
+## Using as a dependency (other mods)
+
+Via [JitPack](https://jitpack.io) — add to your `build.gradle`:
+
+```gradle
+repositories {
+    maven { url "https://jitpack.io" }
+}
+dependencies {
+    modImplementation "com.github.kintil555:nullblockremake:fabric-port-SNAPSHOT"
+}
+```
+
+Then use `com.nullblock.remake.api.NullBlockAPI` and `NullTriggerRegistry` freely — see Features above.
+
 ## Building
 
 ```bash
@@ -38,18 +53,3 @@ The original `nullblockmod` had several dead/broken subsystems that this rewrite
 ```
 
 The compiled jar is written to `build/libs/`.
-
-## Running in a dev environment
-
-```bash
-./gradlew runClient
-./gradlew runServer
-```
-
-## Using as a library dependency
-
-Add this mod as a dependency in your own mod's `mods.toml`, then depend on `NullBlockAPI` for placement/query/trigger APIs. See `com.nullblock.remake.api.NullBlockAPI` for the full surface.
-
-## License
-
-MIT — see [LICENSE](LICENSE).
