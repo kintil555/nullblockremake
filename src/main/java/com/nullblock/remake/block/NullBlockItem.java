@@ -29,7 +29,7 @@ public class NullBlockItem extends BlockItem {
 
     @Nullable
     private Block getDisguiseBlock(ItemStack stack) {
-        return stack.get(ModDataComponents.DISGUISE_BLOCK.get());
+        return stack.get(ModDataComponents.DISGUISE_BLOCK);
     }
 
     @Override

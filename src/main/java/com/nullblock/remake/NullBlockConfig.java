@@ -1,6 +1,14 @@
 package com.nullblock.remake;
 
-import net.minecraftforge.common.ForgeConfigSpec;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Common config for NullBlock Remake.
@@ -21,26 +29,44 @@ import net.minecraftforge.common.ForgeConfigSpec;
  */
 public final class NullBlockConfig {
 
-    public static final ForgeConfigSpec SPEC;
-    public static final ForgeConfigSpec.BooleanValue SHOW_IN_CREATIVE_MENU;
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final Path PATH = FabricLoader.getInstance().getConfigDir()
+            .resolve(NullBlockRemakeMod.MODID + ".json");
 
-    static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
-
-        builder.push("general");
-        SHOW_IN_CREATIVE_MENU = builder
-                .comment(
-                        "If true, the Null Block item appears in the Building Blocks creative tab.",
-                        "Set to false if you only want other mods to be able to place Null Blocks",
-                        "programmatically via NullBlockAPI, without players being able to grab it",
-                        "from the creative inventory by hand."
-                )
-                .define("showInCreativeMenu", true);
-        builder.pop();
-
-        SPEC = builder.build();
-    }
+    public static boolean SHOW_IN_CREATIVE_MENU = true;
 
     private NullBlockConfig() {
+    }
+
+    private static final class Data {
+        boolean showInCreativeMenu = true;
+    }
+
+    public static void load() {
+        if (!Files.exists(PATH)) {
+            save();
+            return;
+        }
+        try (Reader reader = Files.newBufferedReader(PATH)) {
+            Data data = GSON.fromJson(reader, Data.class);
+            if (data != null) {
+                SHOW_IN_CREATIVE_MENU = data.showInCreativeMenu;
+            }
+        } catch (IOException e) {
+            NullBlockRemakeMod.LOGGER.error("Failed to load {} config", NullBlockRemakeMod.MODID, e);
+        }
+    }
+
+    public static void save() {
+        Data data = new Data();
+        data.showInCreativeMenu = SHOW_IN_CREATIVE_MENU;
+        try {
+            Files.createDirectories(PATH.getParent());
+            try (Writer writer = Files.newBufferedWriter(PATH)) {
+                GSON.toJson(data, writer);
+            }
+        } catch (IOException e) {
+            NullBlockRemakeMod.LOGGER.error("Failed to save {} config", NullBlockRemakeMod.MODID, e);
+        }
     }
 }

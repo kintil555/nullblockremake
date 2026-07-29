@@ -18,7 +18,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -67,6 +66,18 @@ public class NullBlock extends Block implements EntityBlock {
     }
 
     @Override
+    protected VoxelShape getOcclusionShape(BlockState state) {
+        // Vanilla's fluid renderer (LiquidBlockRenderer) determines neighbor
+        // "solidity" for corner-height averaging from isSolidRender(), which
+        // in turn derives from the cached occlusion shape (not the collision
+        // shape). NullBlock's selection shape is a full cube (see getShape),
+        // so without this override the occlusion cache still reports "solid",
+        // making adjacent fluid dip its corner height against it instead of
+        // rendering flat like it does next to real air/non-solid blocks.
+        return Shapes.empty();
+    }
+
+    @Override
     public VoxelShape getInteractionShape(BlockState state, BlockGetter level, BlockPos pos) {
         return Shapes.block();
     }
@@ -76,10 +87,27 @@ public class NullBlock extends Block implements EntityBlock {
         return true;
     }
 
+    // ------------------------------------------------------------------
+    // Fluid immunity: noCollission() (required for passability) makes
+    // blocksMotion() false, which vanilla's FlowingFluid.spreadTo() treats
+    // as "washable" for non-air blocks unless canBeReplaced() says
+    // otherwise. Without this override, water/lava spreading into a
+    // NullBlock destroys it and drops it as an item. NullBlock must never
+    // be treated as replaceable by fluids or placement.
+    // ------------------------------------------------------------------
+
     @Override
-    public PushReaction getPistonPushReaction(BlockState state) {
-        return PushReaction.DESTROY;
+    protected boolean canBeReplaced(BlockState state, net.minecraft.world.level.material.Fluid fluid) {
+        return false;
     }
+
+    @Override
+    protected boolean canBeReplaced(BlockState state, net.minecraft.world.item.context.BlockPlaceContext context) {
+        return false;
+    }
+
+    // Piston push reaction is set via BlockBehaviour.Properties#pushReaction(...)
+    // in ModBlocks (getPistonPushReaction override no longer exists in vanilla).
 
     // ------------------------------------------------------------------
     // Rendering: delegate to the BlockEntityRenderer using disguise state.
@@ -93,8 +121,11 @@ public class NullBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public boolean skipRendering(BlockState state, BlockState adjacentState, net.minecraft.core.Direction direction) {
-        return false;
+    protected boolean skipRendering(BlockState state, BlockState adjacentState, net.minecraft.core.Direction direction) {
+        // Cull faces between two adjacent NullBlocks to reduce overdraw in
+        // large NullBlock volumes; the disguise entity renderer draws each
+        // block independently so shared faces are redundant work.
+        return adjacentState.is(this);
     }
 
     // ------------------------------------------------------------------
@@ -106,7 +137,7 @@ public class NullBlock extends Block implements EntityBlock {
         ItemStack stack = super.getCloneItemStack(level, pos, state, includeData);
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof NullBlockEntity nullBe && nullBe.hasDisguise()) {
-            stack.set(ModDataComponents.DISGUISE_BLOCK.get(), nullBe.getDisguiseState().getBlock());
+            stack.set(ModDataComponents.DISGUISE_BLOCK, nullBe.getDisguiseState().getBlock());
         }
         return stack;
     }
@@ -140,7 +171,17 @@ public class NullBlock extends Block implements EntityBlock {
             return InteractionResult.FAIL;
         }
 
-        BlockState disguise = blockItem.getBlock().defaultBlockState();
+        // Derive the disguise state the same way a real placement would,
+        // so blocks whose orientation depends on player position/facing
+        // (stairs, logs, furnaces, glazed terracotta, etc.) disguise with
+        // the correct rotation instead of always defaulting to their base
+        // BlockState. Blocks with no placement-dependent properties simply
+        // fall back to their default state, so this is safe for every block.
+        net.minecraft.world.item.context.BlockPlaceContext ctx =
+                new net.minecraft.world.item.context.BlockPlaceContext(
+                        new net.minecraft.world.item.context.UseOnContext(level, player, hand, stack, hitResult));
+        BlockState placementState = blockItem.getBlock().getStateForPlacement(ctx);
+        BlockState disguise = placementState != null ? placementState : blockItem.getBlock().defaultBlockState();
 
         if (!level.isClientSide) {
             nullBe.setDisguiseState(disguise);

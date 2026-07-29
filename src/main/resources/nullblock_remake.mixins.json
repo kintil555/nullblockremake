@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.nullblock.remake.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "FluidMixin",
+    "FlowableFluidMixin"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "fabric-port" ]
     tags: [ "v*" ]
   pull_request:
     branches: [ "main", "master" ]
@@ -30,10 +30,10 @@ jobs:
         with:
           cache-read-only: false
           gradle-home-cache-cleanup: true
-          gradle-version: '8.8'
+          gradle-version: '8.11'
 
       - name: Regenerate Gradle Wrapper (jar missing from repo)
-        run: gradle wrapper --gradle-version 8.8 --distribution-type bin
+        run: gradle wrapper --gradle-version 8.11 --distribution-type bin
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -66,7 +66,7 @@ jobs:
           path: build/reports/
           if-no-files-found: ignore
 
-      - name: Create GitHub Release
+      - name: Create GitHub Release (tag)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
@@ -74,3 +74,15 @@ jobs:
           generate_release_notes: true
           name: NullBlock Remake ${{ github.ref_name }}
           fail_on_unmatched_files: true
+
+      - name: Publish rolling "latest" release (branch push)
+        if: github.ref == 'refs/heads/fabric-port'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-fabric-port
+          name: NullBlock Remake (fabric-port latest)
+          files: ${{ steps.artifact.outputs.path }}
+          generate_release_notes: false
+          fail_on_unmatched_files: true
+          prerelease: true
+          make_latest: false

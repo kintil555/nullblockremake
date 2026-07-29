@@ -36,7 +36,7 @@ public final class NullBlockAPI {
 
     /** The registered Null Block instance, for direct comparisons (state.is(NullBlockAPI.block())). */
     public static Block block() {
-        return ModBlocks.NULL_BLOCK.get();
+        return ModBlocks.NULL_BLOCK;
     }
 
     /** Returns true if the given state is a NullBlock (regardless of its current disguise). */

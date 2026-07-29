@@ -6,15 +6,13 @@ import com.nullblock.remake.api.trigger.NullTriggerRegistry;
 import com.nullblock.remake.api.trigger.NullTriggerType;
 import com.nullblock.remake.block.NullBlockTracker;
 import com.nullblock.remake.block.entity.NullBlockEntity;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,7 +25,6 @@ import java.util.UUID;
  * this class directly; they subscribe via NullBlockAPI and this class fires
  * their listeners when the relevant condition occurs.
  */
-@Mod.EventBusSubscriber(modid = NullBlockRemakeMod.MODID)
 public final class ModEvents {
 
     private ModEvents() {}
@@ -40,21 +37,23 @@ public final class ModEvents {
     // cleared when a block was removed/unloaded).
     private static final Map<BlockPos, Set<UUID>> INSIDE_RADIUS = new HashMap<>();
 
+    public static void init() {
+        ServerEntityEvents.ENTITY_LOAD.register(ModEvents::onEntityLoad);
+        ServerTickEvents.END_SERVER_TICK.register(ModEvents::onServerTick);
+    }
+
     /** Called by NullBlockTracker when a null block is untracked (removed/unloaded). */
     public static void clearRadiusState(BlockPos pos) {
         INSIDE_RADIUS.remove(pos);
     }
 
     /**
-     * ENTITY_COLLISION: fired when an entity spawns/joins the level occupying
+     * ENTITY_COLLISION: fired when an entity is loaded into a level occupying
      * a Null Block's position. For continuous movement-based overlap, mods
      * should combine PLAYER_NEARBY_TICK (small radius) with their own AABB
      * check in the listener.
      */
-    @SubscribeEvent
-    public static void onEntityJoin(EntityJoinLevelEvent event) {
-        if (event.getLevel().isClientSide() || !(event.getLevel() instanceof ServerLevel level)) return;
-        Entity entity = event.getEntity();
+    private static void onEntityLoad(Entity entity, ServerLevel level) {
         BlockPos pos = entity.blockPosition();
         BlockEntity be = level.getBlockEntity(pos);
         if (be instanceof NullBlockEntity) {
@@ -67,9 +66,7 @@ public final class ModEvents {
      * player against tracked Null Block positions (see NullBlockTracker),
      * instead of scanning the whole world every tick.
      */
-    @SubscribeEvent
-    public static void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END) return;
+    private static void onServerTick(net.minecraft.server.MinecraftServer server) {
         if (NullTriggerRegistry.getConfigs(NullTriggerType.PLAYER_ENTER_RADIUS).isEmpty()
                 && NullTriggerRegistry.getConfigs(NullTriggerType.PLAYER_NEARBY_TICK).isEmpty()) {
             return;
